@@ -1,7 +1,8 @@
 import os
 import sys
-import time
 import threading
+import time
+
 import keyboard
 from playsound import playsound
 
