@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import winsound
 from configparser import ConfigParser
 from threading import Thread
 
@@ -92,6 +93,9 @@ def load_config():
 
 def play_timer(duration, sound_filename):
     """Wait for timer duration then play sound."""
+    # Play confirmation sound
+    winsound.Beep(800, 600)
+
     print(f"Timer started for {duration} seconds...")
     time.sleep(duration)
     print("Time's up!")
