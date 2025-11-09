@@ -1,10 +1,10 @@
 [ATTACKHELICOPTER1]
 hotkey_name = F9
-duration = 3
+duration = 90
 soundfilename = notification.mp3
 
 [ATTACKHELICOPTER2]
 hotkey_code = 79
-duration = 3
+duration = 90
 soundfilename = notification.mp3
 
