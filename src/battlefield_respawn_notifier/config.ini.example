@@ -1,0 +1,10 @@
+[ATTACKHELICOPTER1]
+hotkey = num 1
+duration = 90
+soundfilename = notification.mp3
+
+[ATTACKHELICOPTER2]
+hotkey = num 2
+duration = 90
+soundfilename = notification.mp3
+
