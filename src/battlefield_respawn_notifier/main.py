@@ -6,6 +6,7 @@ from configparser import ConfigParser
 from threading import Thread
 
 import keyboard
+import mouse
 from playsound import playsound
 
 ATTACK_HELI_RESPAWN_SECONDS = 90
@@ -44,9 +45,16 @@ def create_default_config(path):
         "SOUNDFILENAME": SOUND_FILE,
     }
 
+    config["MOUSEBUTTON1"] = {
+        "HOTKEY_NAME": "mouse4",
+        "DURATION": ATTACK_HELI_RESPAWN_SECONDS,
+        "SOUNDFILENAME": SOUND_FILE,
+    }
+
     with open(path, "w") as f:
         f.write("; Keyboard scan codes:\n")
         f.write("; https://www.reddit.com/r/GlobalOffensive/comments/1ato9z8/new_key_bind_scancodes_visualized/\n")
+        f.write("; Mouse buttons: mouse4, mouse5 (for side buttons)\n")
         config.write(f)
 
     print(f"Created default config at: {path}")
@@ -55,10 +63,14 @@ def create_default_config(path):
 def _parse_hotkey_from_config(config: ConfigParser, section):
     if config.has_option(section, "HOTKEY_CODE"):
         scan_code = config.getint(section, "HOTKEY_CODE")
-        return scan_code  # INT
+        return ("keyboard", scan_code)  # Tuple: (type, value)
     elif config.has_option(section, "HOTKEY_NAME"):
-        name = config.get(section, "HOTKEY_NAME")
-        return name  # STR
+        name = config.get(section, "HOTKEY_NAME").lower()
+        # Check if it's a mouse button
+        if name in ["mouse4", "mouse5"]:
+            return ("mouse", name)
+        else:
+            return ("keyboard", name)
     else:
         raise ValueError(f"Section {section} must have either HOTKEY_NAME or HOTKEY_CODE")
 
@@ -78,13 +90,15 @@ def load_config():
     timers = []
     for section in config.sections():
         try:
+            hotkey_type, hotkey_value = _parse_hotkey_from_config(config, section)
             timer = {
-                "hotkey": _parse_hotkey_from_config(config, section),
+                "hotkey_type": hotkey_type,
+                "hotkey": hotkey_value,
                 "duration": config.getint(section, "DURATION"),
                 "sound": config.get(section, "SOUNDFILENAME"),
             }
             timers.append(timer)
-            print(f"Loaded {section}: {timer['hotkey']} -> {timer['duration']}s -> {timer['sound']}")
+            print(f"Loaded {section}: {hotkey_type}:{hotkey_value} -> {timer['duration']}s -> {timer['sound']}")
         except Exception as e:
             print(f"[!] Error loading {section}: {e}")
 
@@ -111,14 +125,10 @@ def play_timer(duration, sound_filename):
 def create_hotkey_handler(duration, sound_filename):
     """Create a hotkey handler for specific timer settings."""
 
-    def handler():
+    def handler(*args):
         Thread(target=play_timer, args=(duration, sound_filename), daemon=True).start()
 
     return handler
-
-
-def on_hotkey():
-    Thread(target=play_timer, daemon=True).start()
 
 
 if __name__ == "__main__":
@@ -131,8 +141,15 @@ if __name__ == "__main__":
     print("\nRegistering hotkeys...")
     for timer in timers:
         handler = create_hotkey_handler(timer["duration"], timer["sound"])
-        keyboard.add_hotkey(timer["hotkey"], handler)
-        print(f"    {timer['hotkey']} registered")
+
+        print(f"    Keyboard: {timer['hotkey']} registered")
+        if timer["hotkey_type"] == "keyboard":
+            keyboard.add_hotkey(timer["hotkey"], handler)
+        elif timer["hotkey_type"] == "mouse":
+            if timer["hotkey"] == "mouse4":
+                mouse.on_button(handler, buttons=("x",), types=mouse.DOWN)
+            elif timer["hotkey"] == "mouse5":
+                mouse.on_button(handler, buttons=("x2",), types=mouse.DOWN)
 
     print("\nListening for hotkeys. Press Ctrl+C to exit.")
     print("=" * 50)

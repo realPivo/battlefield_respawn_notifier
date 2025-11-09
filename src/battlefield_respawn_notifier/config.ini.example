@@ -1,3 +1,6 @@
+; Keyboard scan codes:
+; https://www.reddit.com/r/GlobalOffensive/comments/1ato9z8/new_key_bind_scancodes_visualized/
+; Mouse buttons: mouse1 (left), mouse2 (right), mouse3 (middle), mouse4, mouse5, x, x2
 [ATTACKHELICOPTER1]
 hotkey_name = F9
 duration = 90
@@ -8,3 +11,7 @@ hotkey_code = 79
 duration = 90
 soundfilename = notification.mp3
 
+[MOUSEBUTTON1]
+hotkey_name = mouse5
+duration = 3
+soundfilename = notification.mp3
